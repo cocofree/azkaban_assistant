@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>nice调度任务</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="static/css/dashboard.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+	<!--导航栏-->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">调度任务配置[{{ query_dict["login_user"] }}]</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://brec02:8443/index">azkaban</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <!--input type="text" class="form-control" placeholder="Search..." -->
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <!--侧边栏-->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#" onclick="document.update_form.action='/job_list';$('form').submit()">调度任务列表</a></li>
+          </ul>
+        </div>
+        
+	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <!--查询-->
+        <h2 class="sub-header">任务配置</h2>
+          <div class="row">
+            <form class="form-horizontal" action='/job_update' method='post' name='update_form'>
+                <div class="alert alert-danger" role="alert" style="display: none" name='name_hint' id='name_hint'>
+                    任务[<span id='show_name' name='show_name'>&nbsp;</span>]已经存在,请更换
+                </div>
+                <div class="form-group">
+                <label for="id" class="col-sm-2 control-label">id</label>
+                <div class="col-sm-10">
+                <input readonly type="text" class="form-control" id="id" name='id' placeholder="id" value="{{ job.id}}">
+                </div></div>
+                <div class="form-group">
+                <label for="name" class="col-sm-2 control-label">任务名/流程名</label>
+                <div class="col-sm-10">
+                <input {{ 'readonly' if job.name!='' else '' }} onchange='check_exist()' type="text" class="form-control" id="name" name='name' placeholder="name,如udw_ml_api,不可重复,流程末节点不要用'.',会导致azkaban不显示子任务" value="{{ job.name}}">
+                </div></div>
+                <div class="form-group">
+                <label for="project_name" class="col-sm-2 control-label">项目名</label>
+                <div class="col-sm-10">
+                <input {{ 'readonly' if job.project_name!='' else '' }}  type="text" class="form-control" id="project_name" name='project_name' placeholder="project_name,如data_schedule,项目需先在azkaban中建好" value="{{ job.project_name}}">
+                </div></div>
+                <div class="form-group">
+                <label for="flow_name" class="col-sm-2 control-label">流程末任务节点</label>
+                <div class="col-sm-10">
+                <input  type="text" class="form-control" id="flow_name" name='flow_name' placeholder="flow_name,空表示为任务节点,非空为流程节点,会将末任务及上游任务打包成流程,谨慎使用" value="{{ job.flow_name}}">
+                </div></div>
+                <div class="form-group">
+                <label for="server_host" class="col-sm-2 control-label">服务器</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="server_host" name='server_host' placeholder="server_host,如blog02,服务器域名或IP" value="{{ job.server_host}}">
+                </div></div>
+                <div class="form-group">
+                <label for="server_user" class="col-sm-2 control-label">服务器用户</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="server_user" name='server_user' placeholder="server_user,如hadoop,执行命令的用户,需要保证brec02的hadoop有跳转的权限" value="{{ job.server_user}}">
+                </div></div>
+                <div class="form-group">
+                <label for="server_dir" class="col-sm-2 control-label">服务器目录</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="server_dir" name='server_dir' placeholder="server_dir,如&[default_work_dir]/dw/,执行任务的服务器目录，有的话自动执行cd" value="{{ job.server_dir}}">
+                </div></div>
+                <div class="form-group">
+                <label for="server_script" class="col-sm-2 control-label">执行脚本</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="server_script" name='server_script' placeholder="server_script,如python blog02_log_alarm.py &[last_hour];可以传默认的时间参数" value="{{ job.server_script}}">
+                </div></div>
+                <div class="form-group">
+                <label for="server_script" class="col-sm-2 control-label"></label>
+                <div class="col-sm-10">
+                <div class="alert alert-info alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <strong>可使用的参数:</strong><br>
+                    <pre>默认目录参数 &[default_work_dir] 替换为 /home/hadoop/schedule-service/current
+默认时间参数
+例:流程调度的时间为2015-09-11 09:12:20
+当前时间        &[cur_time]   替换为 2015-09-11 09:12:20
+当前小时        &[cur_hour]   替换为 2015091109
+今天           &[cur_date]   替换为 20150911
+上一个小时      &[last_hour]  替换为 2015091108
+昨天           &[last_date]  替换为 20150910</pre>
+                </div>
+                </div></div>
+                <div class="form-group">
+                <label for="dependencies" class="col-sm-2 control-label">依赖</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="dependencies" name='dependencies' placeholder="dependencies,如udw_ml_performance,udw_ml_user_action,多依赖用逗号分隔" value="{{ job.dependencies}}">
+                </div></div>
+                <div class="form-group">
+                <label for="success_email" class="col-sm-2 control-label">成功邮件</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="success_email" name='success_email' placeholder="success_email,用逗号分隔" value="{{ job.success_email}}">
+                </div></div>
+                <div class="form-group">
+                <label for="failure_email" class="col-sm-2 control-label">失败邮件</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="failure_email" name='failure_email' placeholder="failure_email,用逗号分隔" value="{{ job.failure_email}}">
+                </div></div>
+                <div class="form-group">
+                <label for="success_sms" class="col-sm-2 control-label">成功短信</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="success_sms" name='success_sms' placeholder="success_sms,用逗号分隔" value="{{ job.success_sms}}">
+                </div></div>
+                <div class="form-group">
+                <label for="failure_sms" class="col-sm-2 control-label">失败短信</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="failure_sms" name='failure_sms' placeholder="failure_sms,用逗号分隔" value="{{ job.failure_sms}}">
+                </div></div>
+                <div class="form-group">
+                <label for="retries" class="col-sm-2 control-label">重试次数</label>
+                <div class="col-sm-10">
+                <input type="text" class="form-control" id="retries" name='retries' placeholder="retries,任务失败后重试的次数,0表示不重试" value="{{ job.retries}}">
+                </div></div>
+                <div class="form-group">
+                <label for="creator" class="col-sm-2 control-label">创建者</label>
+                <div class="col-sm-10">
+                <input readonly type="text" class="form-control" id="creator" name='creator' placeholder="creator" value="{{ job.creator}}">
+                </div></div>
+                <div class="form-group">
+                <label for="updater" class="col-sm-2 control-label">更新者</label>
+                <div class="col-sm-10">
+                <input readonly type="text" class="form-control" id="updater" name='updater' placeholder="updater" value="{{ job.updater}}">
+                </div></div>
+                <div class="form-group">
+                <label for="create_time" class="col-sm-2 control-label">创建时间</label>
+                <div class="col-sm-10">
+                <input readonly type="text" class="form-control" id="create_time" name='create_time' placeholder="create_time" value="{{ job.create_time}}">
+                </div></div>
+                <div class="form-group">
+                <label for="update_time" class="col-sm-2 control-label">更新时间</label>
+                <div class="col-sm-10">
+                <input readonly type="text" class="form-control" id="update_time" name='update_time' placeholder="update_time" value="{{ job.update_time}}">
+                </div></div>
+                <div class="form_group">
+                    <input type="hidden" name='query_name' value='{{ query_dict["query_name"] }}'>
+                    <input type="hidden" name='query_project_name' value='{{ query_dict["query_project_name"] }}'>
+                    <input type="hidden" name='query_server_host' value='{{ query_dict["query_server_host"] }}'>
+                    <input type="hidden" name='query_user' value='{{ query_dict["query_user"] }}'>
+                    <input type="hidden" id='session_id' name='session_id' value='{{ query_dict["session_id"] }}'>
+                    <input type="hidden" id='login_user' name='login_user' value='{{ query_dict["login_user"] }}'>
+                    <label for="form_span" class="col-sm-2 control-label"></label>
+                    <div class="col-sm-10">
+                    <button type="button" onclick="$('form').submit()" name='submit_btn' id='submit_btn' class="btn btn-primary"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span>&nbsp;Submit</button>
+                    </div>
+                </div>
+           </form>
+          </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    function edit_job(name){
+        session_id = $('#session_id').attr("value")
+        login_user = $('#login_user').attr("value")
+        name_str = ''
+        if(name!='')
+            name_str = '&name='+name
+        url = '/job_update?session_id='+session_id+'&login_user='+login_user
+        alert(url)
+        window.location.href=url
+    }
+    function check_exist(){
+        name = $('#name')[0].value
+        document.getElementById("show_name").innerHTML= name
+        $.post("/job_check_exist",
+                {'name':name},
+                function(data,status){
+                    if(data == 'exist'){
+                        $('#name_hint').show()
+                        $('#submit_btn').attr('disabled',"true"); 
+                    }else{
+                        $('#name_hint').hide()
+                        $('#submit_btn').removeAttr("disabled");
+                    }
+                }
+        );
+    }
+    </script>
+  </body>
+</html>

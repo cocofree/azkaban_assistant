@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>nice调度任务</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="static/css/dashboard.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+	<!--导航栏-->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">调度任务配置[{{ query_dict["login_user"] }}]</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="https://brec02:8443/index">azkaban</a></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <!--input type="text" class="form-control" placeholder="Search..." -->
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <!--侧边栏-->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#" onclick="$('form').submit()">调度任务列表</a></li>
+          </ul>
+        </div>
+        
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <!--查询-->
+        <h2 class="sub-header">上传结果</h2>
+          <div class="row">
+            <form name='list_form' action='/job_list' method='post'>
+                <div class="form_group">
+                    <input type="hidden" id='session_id' name='session_id' value='{{ query_dict["session_id"] }}'>
+                    <input type="hidden" id='login_user' name='login_user' value='{{ query_dict["login_user"] }}'>
+                </div>
+           </form>
+          </div>
+	<!--列表-->
+        <div class='bs-example'>
+      {% for result_dict in result_list %} 
+        <div class="panel panel-{{ 'success' if result_dict['upload_flag']=='true' else 'danger' }}">
+            <div class="panel-heading">
+            <h3 class="panel-title">{{ '[%s]上传%s' % (result_dict['project_name'],'成功' if result_dict['upload_flag']=='true' else '失败')  }}</h3>
+            </div>
+            <div class="panel-body">
+            上传信息:
+            <pre>{{ result_dict['mes'] }}</pre>
+            </div>
+        </div>
+      {% end %}
+      </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+  </body>
+</html>
