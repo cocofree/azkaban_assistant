@@ -9,6 +9,7 @@ azkaban是一款非常好的调度系统，由Linkedin开源，有以下主要�
 在nice内部实际使用过程中，对azkaban进行了扩展，在azkaban_assistant系统中增加以下功能：
 - LDAP权限认证
 - 远程服务调用
+- 报警扩展
 - 任务WEB化配置、上传
 - 更多的依赖选项
 - 图形化依赖配置
