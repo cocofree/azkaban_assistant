@@ -25,7 +25,10 @@ from handler.dag_edit import DagOpHandler
 
 #默认端口
 from tornado.options import define, options
-define("port", default=8445, help="run on the given port", type=int)
+from util.config import get_conf
+assistant_port= get_conf(CONFILE).get('web_param','assistant_port')
+
+define("port", default=assistant_port, help="run on the given port", type=int)
 
 #log日志配置
 def init_logconfig():

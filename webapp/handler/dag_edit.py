@@ -19,7 +19,7 @@ import StringIO
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(CURRENTPATH, '../../'))
 
-from job_define import Job
+from base.job_define import Job
 
 #指标处理类
 class DagOpHandler(tornado.web.RequestHandler):

@@ -11,15 +11,15 @@ import datetime
 import time
 import json
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(CURRENTPATH, 'tinder/python'))
+sys.path.append(os.path.join(CURRENTPATH, '..'))
 
 from job_status import JobStatus
 from util.helpers import mysql_helper
-from util.mail.sendmail import send_html
-from util.helpers.alarm_helper import send_msg
+from alarm import exe_alarm
 from job_define import Job,MyScheduleException
+from util.config import get_conf
 #配置文件
-CONFILE = "%s/conf/nice.cfg" % CURRENTPATH
+CONFILE = "%s/../conf/nice.cfg" % CURRENTPATH
 
 #执行脚本
 def exe_job(name,execid,start_time,param_dict_str=''):
@@ -103,26 +103,6 @@ def update_jobstatus(job_name,execute_time,execid,status):
     job_status.update_jobstatus()
     print '更新[%s]的执行状态[execute_time:%s][status:%s]' % (job_name,execute_time,status)
 
-#失败告警
-def exe_alarm(job,execid,start_time):
-    #邮件
-    if job.failure_email!='':
-        title = 'azkaban[%s][%s]任务执行出错' % (job.project_name,job.name)
-        content = '''
-        <br>执行时间:%s
-        <br>azkaban[%s][%s]任务执行出错,请查看日志处理
-        <br><a href='https://brec02:8443/executor?execid=%s&job=%s'>点击查看日志</a>
-        ''' % (start_time,job.project_name,job.name,execid,job.name)
-        mailto = job.failure_email.split(',')
-        send_html(mailto,title,content)
-    
-    #短信
-    if job.failure_sms!='':
-        content = 'azkaban[%s][%s]任务执行出错,请处理' % (job.project_name,job.name)
-        msgto = job.failure_sms.split(',')
-        for phone in msgto:
-            send_msg(phone, content , '报警')
-
 #获取替换参数列表
 def get_param_dict(start_time,param_dict_str):
     param_dict = {}
@@ -144,7 +124,10 @@ def get_param_dict(start_time,param_dict_str):
     param_dict['last_date'] =last_date
     param_dict['last_two_date'] =last_two_date
     #默认目录参数
-    param_dict['default_work_dir'] = '/home/hadoop/schedule-service/current/'
+    default_params = get_conf(CONFILE).items('assistant_param')
+
+    for k,v in default_params:
+        param_dict[k] = v
     #页面传参
     try:
         if param_dict_str!='':
@@ -210,17 +193,6 @@ def get_exetime(base_time,time_type,hour_diff):
 
     return exec_time
 
-#目录处理
-def process_dir(work_dir):
-    dir_params_dict = {}
-    dir_params_dict['default_work_dir'] = '/home/hadoop/schedule-service/current/'
-
-    for k,v in dir_params_dict.items():
-        replace_str = '&[%s]' % k
-        work_dir = work_dir.replace(replace_str,v)
-    
-    return work_dir
-
 if __name__ == '__main__':
     job_name = sys.argv[1]
     execid = sys.argv[2]
@@ -236,4 +208,3 @@ if __name__ == '__main__':
     #except Exception,e:
     #    print e
     exe_job(job_name,execid,start_time,param_dict)
-

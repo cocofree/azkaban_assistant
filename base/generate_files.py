@@ -15,12 +15,14 @@ import json
 import commands
 
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(CURRENTPATH, 'tinder/python'))
+sys.path.append(os.path.join(CURRENTPATH, '..'))
 
 from util.helpers import mysql_helper
 from job_define import Job,MyScheduleException
+from util.config import get_conf
 #配置文件
-CONFILE = "%s/conf/nice.cfg" % CURRENTPATH
+CONFILE = "%s/../conf/nice.cfg" % CURRENTPATH
+azkaban_url = get_conf(CONFILE).get('web_param','azkaban_url')
 
 #执行脚本
 def generate_files(username='',session_id=''):
@@ -77,8 +79,8 @@ def login_and_upload(username,password):
 #azkaban的session_id
 def get_session_id(username='',password=''):
     try:
+        url = azkaban_url
         #请求路径
-        url = 'https://brec02:8443/'
         params={}
         params['action']='login'
         if username=='' or password=='':
@@ -102,7 +104,7 @@ def upload_zip(session_id,project_name,zip_path):
     result_dict = {'project_name':project_name,'upload_flag':'false'}
     try:
         #请求路径
-        url = 'https://brec02:8443/manager'
+        url = '%s/manager' % azkaban_url
         command = '''curl -k -i -H "Content-Type: multipart/mixed" -X POST --form 'session.id=%s' --form 'ajax=upload' --form 'file=@%s;type=application/zip' --form 'project=%s' %s''' % (session_id,zip_path,project_name,url)
         print '>>>>',command
         status,result = commands.getstatusoutput(command)
@@ -129,7 +131,6 @@ def upload_zip(session_id,project_name,zip_path):
         return result_dict
 
 if __name__ == '__main__':
-    login_and_upload('wangxu','Free')
-    #session_id = get_session_id()
+    session_id = get_session_id()
     #generate_files(session_id)
 

@@ -32,7 +32,7 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="https://brec02:8443/index">azkaban</a></li>
+          <li><a href="{{ azkaban_url }}/index">azkaban</a></li>
           </ul>
           <form class="navbar-form navbar-right">
             <!--input type="text" class="form-control" placeholder="Search..." -->
@@ -137,7 +137,7 @@
                 <div class="form-group">
                 <label for="server_user" class="col-sm-2 control-label">服务器用户</label>
                 <div class="col-sm-10">
-                <input type="text" class="form-control" id="server_user" name='server_user' placeholder="server_user,如hadoop,执行命令的用户,需要保证brec02的hadoop有跳转的权限" value="{{ job.server_user}}">
+                <input type="text" class="form-control" id="server_user" name='server_user' placeholder="server_user,如hadoop,执行命令的用户,需要保证有跳转的权限" value="{{ job.server_user}}">
                 </div></div>
                 <div class="form-group">
                 <label for="server_dir" class="col-sm-2 control-label">服务器目录</label>

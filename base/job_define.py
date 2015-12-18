@@ -10,12 +10,12 @@ import paramiko
 import logging
 
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(CURRENTPATH, 'tinder/python'))
+sys.path.append(os.path.join(CURRENTPATH, '..'))
 
 from util.helpers import mysql_helper
 
 #配置文件
-CONFILE = "%s/conf/nice.cfg" % CURRENTPATH
+CONFILE = "%s/../conf/nice.cfg" % CURRENTPATH
 
 #获取数据库
 def get_db():

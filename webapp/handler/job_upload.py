@@ -18,7 +18,10 @@ import time
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(CURRENTPATH, '../../'))
 
-from generate_files import login_and_upload
+from base.generate_files import login_and_upload
+from util.config import get_conf
+CONFILE = "%s/../../conf/nice.cfg" % CURRENTPATH
+azkaban_url = get_conf(CONFILE).get('web_param','azkaban_url')
 
 #指标处理类
 class JobUploadHandler(tornado.web.RequestHandler):
@@ -48,6 +51,6 @@ class JobUploadHandler(tornado.web.RequestHandler):
         }
 
         logging.info('[%s] upload jobs' % (login_user))
-        self.render('upload.html',title=title,result_list=result_list,query_dict=query_dict)
+        self.render('upload.html',title=title,result_list=result_list,query_dict=query_dict,azkaban_url=azkaban_url)
 
 

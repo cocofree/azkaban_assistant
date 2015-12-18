@@ -17,7 +17,10 @@ import os
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(CURRENTPATH, '../../'))
 
-from job_define import Job
+from base.job_define import Job
+from util.config import get_conf
+CONFILE = "%s/../../conf/nice.cfg" % CURRENTPATH
+azkaban_url = get_conf(CONFILE).get('web_param','azkaban_url')
 
 #指标处理类
 class JobToUpdateHandler(tornado.web.RequestHandler):
@@ -65,6 +68,6 @@ class JobToUpdateHandler(tornado.web.RequestHandler):
         }
 
         logging.info('to update job [%s]' % name)
-        self.render('to_update.html',title=title,job=job,jobs=jobs,all_jobs=all_jobs,projects=projects,query_dict=query_dict)
+        self.render('to_update.html',title=title,job=job,jobs=jobs,all_jobs=all_jobs,projects=projects,query_dict=query_dict,azkaban_url=azkaban_url)
 
 

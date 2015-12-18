@@ -17,7 +17,10 @@ import os
 CURRENTPATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(CURRENTPATH, '../../'))
 
-from job_define import Job
+from base.job_define import Job
+from util.config import get_conf
+CONFILE = "%s/../../conf/nice.cfg" % CURRENTPATH
+azkaban_url = get_conf(CONFILE).get('web_param','azkaban_url')
 
 #指标处理类
 class JobDeleteHandler(tornado.web.RequestHandler):
@@ -50,7 +53,7 @@ class JobDeleteHandler(tornado.web.RequestHandler):
         
         #列表
         jobs = Job.get_alljobs(query_name,query_project_name,query_server_host,query_user,login_user)
-
+        
         query_dict = {
                 'query_name':query_name,
                 'query_project_name':query_project_name,
@@ -61,6 +64,6 @@ class JobDeleteHandler(tornado.web.RequestHandler):
         }
 
         logging.info('[%s] delete job [%s]' % (login_user,name))
-        self.render('list.html',title=title,jobs=jobs,query_dict=query_dict)
+        self.render('list.html',title=title,jobs=jobs,query_dict=query_dict,azkaban_url=azkaban_url)
 
 
