@@ -37,6 +37,7 @@ azkaban是一款非常给力的调度系统，由Linkedin开源，有以下主�
 3. 远程脚本是否正常结束，是通过shell执行script execute status ["$?"]（最后一个脚本的状态返回值）来判断的，所以下面的脚本：
 > test.sh
 > > echooo 'hello world'
+> > 
 > > echo 'hello world'
 
 虽然第一行出错，但最后一行继续执行并返回正确（相当于第一行的异常被捕获了），所以脚本仍认为是成功。使用的时候需要注意下
