@@ -47,5 +47,9 @@ azkaban是一款非常给力的调度系统，由Linkedin开源，有以下主�
 # 关于nice
 专注于图片与标签的社交APP~
 
-# 内部wiki亲情大放送
-http://note.youdao.com/noteshare?id=395820b77024d74f4e4914cb13ef5e5f
+# lalala
+[内部wiki亲情大放送](http://note.youdao.com/noteshare?id=395820b77024d74f4e4914cb13ef5e5f)
+[简书直达车](http://www.jianshu.com/p/1673f1577589)
+
+> > echooo 'hello world'书
+> > echooo 'hello world'
