@@ -14,6 +14,9 @@ azkaban是一款非常给力的调度系统，由Linkedin开源，有以下主�
 - 图形化依赖配置（拖来拖去就把依赖关系配好了）
 - LDAP权限认证（不用再给每一个人添加帐号了）
 
+[简书直达车，有图有真相](http://www.jianshu.com/p/1673f1577589)
+
+
 # 安装部署
 基于azkaban-2.5.0开发，对源文件有所改动
 
@@ -49,5 +52,3 @@ azkaban是一款非常给力的调度系统，由Linkedin开源，有以下主�
 
 # lalala
 [内部wiki亲情大放送](http://note.youdao.com/noteshare?id=395820b77024d74f4e4914cb13ef5e5f)
-
-[简书直达车](http://www.jianshu.com/p/1673f1577589)
