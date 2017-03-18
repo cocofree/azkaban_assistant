@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>nice azkaban 任务依赖图</title>
+<meta name="description" content="nice azkaban gojs" />
+<!-- Copyright 1998-2015 by Northwoods Software Corporation. -->
+<meta charset="UTF-8">
+<link href="static/css/bootstrap.min.css" rel="stylesheet">
+<link href="static/css/dashboard.css" rel="stylesheet">
+
+<script src="static/js/go.js"></script>
+<script src="static/js/jquery.min.js"></script>
+<script src="static/js/bootstrap.min.js"></script>
+<script id="code">
+  function init() {
+  	//定义通用变量，简化代码
+    var $go = go.GraphObject.make;  // for conciseness in defining templates
+		//对话框
+    myDiagram =
+    	//DIV属性
+      $go(go.Diagram, "myDiagram",  // create a Diagram for the DIV HTML element
+        {
+          // position the graph in the middle of the diagram
+          //初始化位置
+          initialContentAlignment: go.Spot.Center,
+
+          // allow double-click in background to create a new node
+          //"clickCreatingTool.archetypeNodeData": { text: "Node", color: "white" },
+
+          // allow Ctrl-G to call groupSelection()
+          //"commandHandler.archetypeGroupData": { text: "Group", isGroup: true, color: "blue" },
+
+          // enable undo & redo
+          "undoManager.isEnabled": true,
+
+        });
+
+    // Define the appearance and behavior for Nodes:
+
+    // First, define the shared context menu for all Nodes, Links, and Groups.
+    // To simplify this code we define a function for creating a context menu button:
+    function makeButton(text, action, visiblePredicate) {
+      return $go("ContextMenuButton",
+               $go(go.TextBlock, text),
+               { click: action },
+               // don't bother with binding GraphObject.visible if there's no predicate
+               visiblePredicate ? new go.Binding("visible", "", visiblePredicate).ofObject() : {});
+    }
+
+    // a context menu is an Adornment with a bunch of buttons in them
+    
+
+    
+    //任务信息
+    function nodeInfo(d) {  // Tooltip info for a node data object
+      var str = "Node " + d.key + ": " + d.text + "\n";
+      if (d.group)
+        str += "member of " + d.group;
+      else
+        str += "top-level node";
+      return str;
+    }
+    //任务位置
+		function nodeStyle() {
+      return [
+        // The Node.location comes from the "loc" property of the node data,
+        // converted by the Point.parse static method.
+        // If the Node.location is changed, it updates the "loc" property of the node data,
+        // converting back using the Point.stringify static method.
+        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+        {
+          // the Node.location is at the center of each node
+          locationSpot: go.Spot.Center,
+          //isShadowed: true,
+          //shadowColor: "#888",
+          // handle mouse enter/leave events to show/hide the ports
+        }
+      ];
+    }
+
+    // These nodes have text surrounded by a rounded rectangle
+    // whose fill color is bound to the node data.
+    // The user can drag a node by dragging its TextBlock label.
+    // Dragging from the Shape will start drawing a new link.
+    myDiagram.nodeTemplate =
+      $go(go.Node, "Auto",
+        nodeStyle() ,
+        //{ locationSpot: go.Spot.Center },
+        $go(go.Shape, "RoundedRectangle",
+          {
+            fill: "white", // the default fill, if there is no data-binding
+            portId: "", 
+            cursor: "pointer",  // the Shape is the port, not the whole Node
+            // allow all kinds of links from and to this port
+            //不允许依赖自己
+            fromLinkable: true, fromLinkableSelfNode: false, fromLinkableDuplicates: false,
+            toLinkable: true, toLinkableSelfNode: false, toLinkableDuplicates: false
+          },
+          new go.Binding("fill", "color")),
+        $go(go.TextBlock,
+          {
+            font: "12px sans-serif",
+            stroke: 'white',
+            margin: 6,  // make some extra space for the shape around the text
+            isMultiline: false,  // don't allow newlines in text
+            editable: false  // allow in-place editing by user
+          },
+          new go.Binding("text", "text").makeTwoWay()),  // the label shows the node data's text
+        //显示默认信息
+        { // this tooltip Adornment is shared by all nodes
+          toolTip:
+            $go(go.Adornment, "Auto",
+              $go(go.Shape, { fill: "#FFFFCC" }),
+              $go(go.TextBlock, { margin: 4 },  // the tooltip shows the result of calling nodeInfo(data)
+                new go.Binding("text", "", nodeInfo))
+            ),
+          // this context menu Adornment is shared by all nodes
+          //contextMenu: partContextMenu
+        }
+      );
+
+    // Define the appearance and behavior for Links:
+		//
+
+    // The link shape and arrowhead have their stroke brush data bound to the "color" property
+    myDiagram.linkTemplate =
+      $go(go.Link,
+        { relinkableFrom: true, relinkableTo: true },  // allow the user to relink existing links
+        $go(go.Shape,
+          { strokeWidth: 2 },
+          new go.Binding("stroke", "color")),
+        $go(go.Shape,
+          { toArrow: "Standard", stroke: null },
+          new go.Binding("fill", "color"))
+         
+      );
+
+   
+
+    // Define the behavior for the Diagram background:
+		//对话框默认信息
+    function diagramInfo(model) {  // Tooltip info for the diagram's model
+      return "流程图:\n" + model.nodeDataArray.length + " 节点, " + model.linkDataArray.length + " 连线";
+    }
+
+    // provide a tooltip for the background of the Diagram, when not over any Part
+    myDiagram.toolTip =
+      $go(go.Adornment, "Auto",
+        $go(go.Shape, { fill: "#FFFFCC" }),
+        $go(go.TextBlock, { margin: 4 },
+          new go.Binding("text", "", diagramInfo))
+      );
+
+		myDiagram.contextMenu =
+      $go(go.Adornment, "Vertical",
+          makeButton("Save",
+                     function(e, obj) {
+                     	console.log(myDiagram.model.nodeDataArray)
+                        $.post(
+                        '/dag',
+                        {
+                            'op' : 'save',
+                            'login_user' : '{{ login_user }}',
+                            'project_name' : '{{ project_name }}',
+                            'nodes' : JSON.stringify(myDiagram.model.nodeDataArray),
+                            'links' : JSON.stringify(myDiagram.model.linkDataArray),
+                        },
+                        function(d) {
+                            console.log(d)
+                            alert(d)
+                        })
+                     },
+                     function(o) { return 1 })
+      );
+
+    // Create the Diagram's Model:
+    var nodeDataArray = [
+      {% for job in jobs %}
+      { key:'{{ job.name }}',
+        text:'{{ job.name }}', 
+        color: '{{'#EEAD0E' if job.flow_name!='' else '#4FB862' if job.has_dependce and job.is_dependced else '#0698C9' if job.has_dependce else '#4FB862' if job.is_dependced else '#E15253' }} ', 
+        {{ 'loc' if  job.loc!='' else 'tt' }} :'{{ job.loc if job.loc!='' else '' }}' },
+      {% end %}
+    ];
+    var linkDataArray = [
+      {% for job in jobs %}
+        {% for from_job in job.dependencies.split(',') %}
+            {% if from_job!='' %}
+                { from: '{{ from_job }}',
+                to: '{{ job.name }}',
+                color: "#B1B1B1" },
+            {% end %}
+        {% end %}
+      {% end %}
+    ];
+    
+    
+    
+    
+    myDiagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+    myDiagram.model.addChangedListener(function(evt) {
+    	
+    // ignore unimportant Transaction events
+    if (!evt.isTransactionFinished) return;
+    var txn = evt.object;  // a Transaction
+    if (txn === null) return;
+    // iterate over all of the actual ChangedEvents of the Transaction
+    txn.changes.each(function(e) {
+      // record node insertions and removals
+      if (e.change === go.ChangedEvent.Property) {
+        if (e.modelChange === "linkDataArray" || e.modelChange === "linkFromKey" || e.modelChange === "linkToKey") {
+          alert(myDiagram.model.linkDataArray)
+        }
+      }
+      if (e.modelChange !== "nodeDataArray"){
+      		//alert(myDiagram.model.nodeDataArray)
+      	}
+    });
+  });
+  }
+</script>
+</head>
+<body onload="init()">
+<div class="container">
+<h2>[{{ project_name }}]DAG图依赖关系设置</h2>
+<div class="alert alert-success" role="alert">
+1、用鼠标拖拽Node边缘可以与其他Node进行连线,新添加的线条显示黑色<br>
+2、使用Delete键可以删除Link<br>
+3、鼠标右键三连击,显示保存按钮(只保存依赖关系和Node位置)<br>
+4、红色和蓝色Node表示一个流程,黄色为子流程节点,绿色为普通任务节点
+</div>
+</div>
+<div class="container">
+  <div class="col-content" id="myDiagram" style="border: solid 1px black; width:1200px; height:600px"></div>
+</div>
+</body>
+</html>

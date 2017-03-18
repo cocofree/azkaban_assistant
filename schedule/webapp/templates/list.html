@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>nice调度任务</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="static/css/dashboard.css" rel="stylesheet">
+
+  </head>
+
+  <body>
+	<!--div class="modal fade" role="dialog" aria-labelledby="ldapModalLabel">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+    <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title" id="gridSystemModalLabel">登陆LDAP</h4>
+    </div>
+    <div class="modal-body">
+    <div class="container-fluid">
+    <div class="row">
+    <input type="text" class="form-control" name='username' value='' placeholder="username">
+    <input type="password" class="form-control" name='password' value='' placeholder="password">
+    </div>
+    </div>
+    </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <button type="button" class="btn btn-primary">Upload</button>
+    </div>
+    </div>
+    </div>
+    </div>-->
+    <!--导航栏-->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">调度任务配置[{{ query_dict["login_user"] }}]</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+          </ul>
+          <form class="navbar-form navbar-right">
+            <!--input type="text" class="form-control" placeholder="Search..." -->
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <!--侧边栏-->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#" onclick="document.list_form.action='/job_list';$('form').submit()">调度任务列表</a></li>
+            <!--li><a href="#" onclick="document.list_form.action='/job_upload';$('form').submit()">上传Job</a></li-->
+          </ul>
+        </div>
+        
+	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <!--查询-->
+        <h2 class="sub-header">任务列表</h2>
+          <div class="row">
+           
+            <form class="navbar-form navbar-left" name='upload_form' action='/job_upload' method='post' role="search">
+            <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id='mySmallModalLabel'>
+            <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+            <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="gridSystemModalLabel">登陆LDAP</h4>
+            </div>
+            <div class="modal-body">
+            <input type="text" class="form-control" name='username' value='' placeholder="username">
+            <input type="password"  class="form-control"  name='password' value='' placeholder="password">
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="document.upload_form.submit()">Upload</button>
+            </div>
+            </div>
+            </div>
+            </div>
+            </form>
+
+            <form class="navbar-form navbar-left" name='list_form' action='/job_list' method='post' role="search">
+                <div class="form_group">
+                    <input type="text" class="form-control" name='query_name' value='{{ query_dict["query_name"] }}' placeholder="任务名">
+                    <input type="text" class="form-control" name='query_project_name' value='{{ query_dict["query_project_name"] }}' placeholder="项目">
+                    <input type="text" class="form-control" name='query_server_host' value='{{ query_dict["query_server_host"] }}' placeholder="服务器">
+                    <input type="text" class="form-control" name='query_user' value='{{ query_dict["query_user"] }}' placeholder="用户">
+                    <input type="hidden" id='session_id' name='session_id' value='{{ query_dict["session_id"] }}'>
+                    <input type="hidden" id='login_user' name='login_user' value='{{ query_dict["login_user"] }}'>
+                    <input type="hidden" id='name' name='name' value=''>
+                    <input type="hidden" id='is_copy' name='is_copy' value='false'>
+                    <button type="submit" onclick="document.list_form.submit()" class="btn btn-primary"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                    <button type="button" onclick="edit_job('')" class="btn btn-success"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>Add</button>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mySmallModalLabel"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>Upload</button>
+                </div>
+                <!--div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" id='mySmallModalLabel'>
+                  <div class="modal-dialog modal-sm">
+                      <div class="modal-content">
+                            <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="gridSystemModalLabel">登陆LDAP</h4>
+                            </div>
+                            <div class="modal-body">
+                            <input type="text" class="form-control" name='username' value='' placeholder="username">
+                            <input type="password"  name='password' value='' placeholder="password">
+                            </div>
+                            <div class="modal-footer">
+                            <!button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="document.list_form.action='/job_upload';$('form').submit()">Upload</button>
+                            </div>
+                  </div>
+                  </div>
+                  </div-->
+
+                  <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" id='deleteModalLabel'>
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="gridSystemModalLabel">确定删除流程/任务/依赖关系?<br>删除后需要上传生效!</h4>
+                        </div>
+                        <div class="modal-body">
+                        <span id='show_delete_name' style="color:Red">&nbsp;</span>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" onclick="delete_job()">确定</button>
+                        </div>
+                        </div>
+                    </div>
+                  </div>
+           </form>
+          </div>
+	<!--列表-->
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th width='20%' style="word-break:break-all">任务名</th>
+                  <th width='10%'>项目</th>
+                  <!--th width='10%'>服务器</th-->
+                  <!--th width='10%'>创建者</th-->
+                  <th width='10%'>最后更新者</th>
+                  <th width='20%'>更新时间</th>
+                  <th width='20%'></th>
+                </tr>
+              </thead>
+              <tbody>
+              {% autoescape None %}
+              {% for job in jobs %}
+                <tr>
+                  <td>{{ job.name }}</td>
+                  <td>{{ job.project_name }}
+                  </td>
+                  <!--td>{{ job.server_host }}</td-->
+                  <!--td>{{ job.creator }}</td-->
+                  <td>{{ job.updater }}</td>
+                  <td>{{ job.update_time }}</td>
+                  <td align=center>
+                  <button type="button" onclick="edit_dag('{{ job.project_name }}')" class="btn btn-warning btn-sm">
+                  DAG</button>
+                  <button type="button" onclick="edit_job('{{ job.name }}')" class="btn btn-info btn-sm">
+                  Edit</button>
+                  <!--button type="button" onclick="delete_job('{{ job.name }}')" class="btn btn-danger btn-sm"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>&nbsp;Del</button-->
+                  <button type="button" onclick="set_delete_job('{{ job.name }}')" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModalLabel">
+                  Del</button>
+                  <button type="button" onclick="copy_job('{{ job.name }}')" class="btn btn-success">
+                  Copy</button>
+                  </td>
+                </tr>
+                {% end %}
+              </tbody>
+            </table>
+          </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="static/js/jquery.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+    function edit_job(name){
+        document.list_form.action='/job_to_update'
+        $("#name")[0].value=name
+        document.list_form.submit()
+    }
+    function copy_job(name){
+        document.list_form.action='/job_to_update'
+        $("#name")[0].value=name
+        $("#is_copy")[0].value='true'
+        document.list_form.submit()
+    }
+    function edit_dag(project_name){
+        window.open('/dag?op=edit&login_user={{ query_dict['login_user'] }}&project_name='+project_name)
+    }
+
+    function set_delete_job(name){
+        $("#name")[0].value=name
+        document.getElementById("show_delete_name").innerHTML= name
+    }
+    function delete_job(){
+       document.list_form.action='/job_delete'
+       //$("#name")[0].value=name
+       //$('#edit_job_name').attr("value")=name
+       document.list_form.submit() 
+    }
+    $('#ldapModalLabel').modal() 
+    </script>
+  </body>
+</html>
