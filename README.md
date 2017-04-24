@@ -31,7 +31,7 @@ azkaban是一款非常给力的调度系统，由Linkedin开源，有以下主�
 
 ## 服务启动
 1. 分别启动azkaban-executor/azkaban-web
-2. 启动job管理服务：schedule/webapp下执行startup.sh/restart.sh,查看schedule_web.log日志是否有报错
+2. 启动job管理服务(需与web工程在同一服务器下)：schedule/webapp下执行startup.sh/restart.sh,查看schedule_web.log日志是否有报错
 3. 登陆https://hostname:8443，先创建项目，再点击“任务配置”进行配置
 
 ## 需要注意的地方
